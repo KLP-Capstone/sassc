@@ -78,7 +78,7 @@ int output(int error_status, const char* error_message, const char* output_strin
             fprintf(stderr, "An error occurred; no error message available.\n");
         }
         return 1;
-    } else if (output_string) { // 예외 없고, output 스트링이 존재한다면 outfile에 쓰기
+    } else if (output_string) { // 예외 없고, output 스트링이 존재한다면 outfile에 결과 쓰기
         if(outfile) {
             FILE* fp = fopen(outfile, "wb");
             if(!fp) {
@@ -166,6 +166,7 @@ int compile_stdin(struct Sass_Options* options, char* outfile) {
 // 컴파일 실행
 int compile_file(struct Sass_Options* options, char* input_path, char* outfile) {
     int ret;
+    // TODO : sass_make_file_context 함수와 sass_file_context_get_context 함수의 definition 찾기
     struct Sass_File_Context* ctx = sass_make_file_context(input_path);
     struct Sass_Context* ctx_out = sass_file_context_get_context(ctx);
     if (outfile) sass_option_set_output_path(options, outfile);
@@ -249,7 +250,7 @@ void invalid_usage(char* argv0) {
 
 }
 
-// 실제 실행되는 부분
+// 실제 처음 실행되는 함수
 int main(int argc, char** argv) {
 #ifdef _MSC_VER
     _set_error_mode(_OUT_TO_STDERR);
