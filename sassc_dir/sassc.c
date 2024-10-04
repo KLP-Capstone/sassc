@@ -399,12 +399,12 @@ int main(int argc, char** argv) {
         } else if (auto_source_map) {
             sass_option_set_source_map_embed(options, true);
         }
+        // 컴파일 진행
         result = compile_file(options, argv[optind], outfile);
     } else {
         if (optind < argc) {
             outfile = argv[optind];
         }
-        // 컴파일 실행
         result = compile_stdin(options, outfile);
     }
 
