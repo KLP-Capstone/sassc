@@ -68,7 +68,9 @@ int get_argv_utf8(int* argc_ptr, char*** argv_ptr) {
 #include <sysexits.h>
 #endif
 
+// error 상태, error 메시지, output 스트링, output파일을 parameter로 받는 함수
 int output(int error_status, const char* error_message, const char* output_string, const char* outfile) {
+    // error 발생 시 예외처리
     if (error_status) {
         if (error_message) {
             fprintf(stderr, "%s", error_message);
@@ -76,7 +78,7 @@ int output(int error_status, const char* error_message, const char* output_strin
             fprintf(stderr, "An error occurred; no error message available.\n");
         }
         return 1;
-    } else if (output_string) {
+    } else if (output_string) { // 예외 없고, output 스트링이 존재한다면 outfile에 쓰기
         if(outfile) {
             FILE* fp = fopen(outfile, "wb");
             if(!fp) {
@@ -90,7 +92,7 @@ int output(int error_status, const char* error_message, const char* output_strin
             }
             fclose(fp);
         }
-        else {
+        else { // error 없고 output 파일 없을 때 command line에 출력
             #ifdef _WIN32
               setmode(fileno(stdout), O_BINARY);
             #endif
@@ -161,6 +163,7 @@ int compile_stdin(struct Sass_Options* options, char* outfile) {
     return ret;
 }
 
+// 컴파일 실행
 int compile_file(struct Sass_Options* options, char* input_path, char* outfile) {
     int ret;
     struct Sass_File_Context* ctx = sass_make_file_context(input_path);
