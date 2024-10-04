@@ -246,6 +246,7 @@ void invalid_usage(char* argv0) {
 
 }
 
+// 실제 실행되는 부분
 int main(int argc, char** argv) {
 #ifdef _MSC_VER
     _set_error_mode(_OUT_TO_STDERR);
@@ -255,6 +256,8 @@ int main(int argc, char** argv) {
 #ifdef _WIN32
     get_argv_utf8(&argc, &argv);
 #endif
+
+    // command line에 "sassc"만 입력했을 경우
     if ((argc == 1) && isatty(fileno(stdin))) {
         print_usage(argv[0]);
         return 0;
@@ -272,6 +275,8 @@ int main(int argc, char** argv) {
     int c;
     size_t i;
     int long_index = 0;
+
+    // "sassc -?" 의 ?마다 출력할 내용 저장
     static struct option long_options[] =
     {
         { "stdin",              no_argument,       0, 's' },
@@ -288,6 +293,9 @@ int main(int argc, char** argv) {
         { "help",               no_argument,       0, 'h' },
         { NULL,                 0,                 NULL, 0}
     };
+
+    // command line에서 하나씩 읽으면서 -option이 나타날 때까지 실행
+    // file name 등이 적혀 있으면 getopt_long 함수 결과가 -1로 while문 빠져나감
     while ((c = getopt_long(argc, argv, "vhslm::Map:t:I:P:", long_options, &long_index)) != -1) {
         switch (c) {
         case 's':
@@ -364,6 +372,7 @@ int main(int argc, char** argv) {
         }
     }
 
+    // main함수 parameter가 너무 많은 경우
     if(optind < argc - 2) {
         fprintf(stderr, "Error: Too many arguments.\n");
         invalid_usage(argv[0]);
@@ -371,10 +380,16 @@ int main(int argc, char** argv) {
 
     int result;
     const char* dash = "-";
+    // from_stdin : command line에서 sassc -s 입력 시 1로 설정. 그렇지 않으면 0으로 초기화
     if(optind < argc && strcmp(argv[optind], dash) != 0 && !from_stdin) {
+
+        // 아직 command를 다 안 읽은 경우
+        // 즉, input file까지 읽고 output 파일을 읽지 않은 경우
         if (optind + 1 < argc) {
-            outfile = argv[optind + 1];
+            outfile = argv[optind + 1]; // output file name을 outfile 변수에 저장
         }
+
+        // generate_source_map : 커맨드라인에서 sassc -m을 실행했을 경우에 true로 설정됨.
         if (generate_source_map && outfile) {
             const char* extension = ".map";
             char* source_map_file  = calloc(strlen(outfile) + strlen(extension) + 1, sizeof(char));
@@ -389,6 +404,7 @@ int main(int argc, char** argv) {
         if (optind < argc) {
             outfile = argv[optind];
         }
+        // 컴파일 실행
         result = compile_stdin(options, outfile);
     }
 
