@@ -1,9 +1,9 @@
-Capstone(1): sass optimization을 위한 repository\
+Capstone(1): sass optimization을 위한 repository
 
 이 프로젝트는 기존에 존재하던 Libsass, sassc를 가져와 최적화하는 프로젝트임을 밝힘
 
 1. 주소\
-sassc : https://github.com/sass/sassc\
+sassc : https://github.com/sass/sassc \
 libsass : https://github.com/sass/Libsass
 
 2. 최적화 분야\
