@@ -68,7 +68,9 @@ int get_argv_utf8(int* argc_ptr, char*** argv_ptr) {
 #include <sysexits.h>
 #endif
 
+// error 상태, error 메시지, output 스트링, output파일을 parameter로 받는 함수
 int output(int error_status, const char* error_message, const char* output_string, const char* outfile) {
+    // error 발생 시 예외처리
     if (error_status) {
         if (error_message) {
             fprintf(stderr, "%s", error_message);
@@ -76,7 +78,7 @@ int output(int error_status, const char* error_message, const char* output_strin
             fprintf(stderr, "An error occurred; no error message available.\n");
         }
         return 1;
-    } else if (output_string) {
+    } else if (output_string) { // 예외 없고, output 스트링이 존재한다면 outfile에 결과 쓰기
         if(outfile) {
             FILE* fp = fopen(outfile, "wb");
             if(!fp) {
@@ -90,7 +92,7 @@ int output(int error_status, const char* error_message, const char* output_strin
             }
             fclose(fp);
         }
-        else {
+        else { // error 없고 output 파일 없을 때 command line에 출력
             #ifdef _WIN32
               setmode(fileno(stdout), O_BINARY);
             #endif
@@ -161,17 +163,25 @@ int compile_stdin(struct Sass_Options* options, char* outfile) {
     return ret;
 }
 
+// 컴파일 실행
+// 정상 route -> option: blank, input_path: input file name, outfile: output file name
 int compile_file(struct Sass_Options* options, char* input_path, char* outfile) {
     int ret;
+    // sass_make_file_context: libsass_dir/include/sass/context.h 38번째 줄 정의, libsass_dir/src/sass_context.cpp 601번째 줄 구현
+    // context의 내용이 input_path인 Sass_File_Context를 생성
     struct Sass_File_Context* ctx = sass_make_file_context(input_path);
+    // sass_file_context_get_context: libsass_dir/include/sass/context.h 60번째 줄 정의, libsass_dir/src/sass_context.cpp 345번째 줄 구현
+    // Sass_File_Contest ctx를 넣어서 Sass_Context를 추출 (왜있는 코드인진 모르겠음)
     struct Sass_Context* ctx_out = sass_file_context_get_context(ctx);
-    if (outfile) sass_option_set_output_path(options, outfile);
+    if (outfile) sass_option_set_output_path(options, outfile); // option의 output_path를 outfile로 설정
     const char* srcmap_file = sass_option_get_source_map_file(options);
-    sass_option_set_input_path(options, input_path);
-    sass_file_context_set_options(ctx, options);
+    sass_option_set_input_path(options, input_path); // option의 input_path를 parameter input_path로 설정
+    sass_file_context_set_options(ctx, options); // 생성한 sass_file_context에 option 설정
 
+    // 컴파일 진행
     sass_compile_file_context(ctx);
 
+    // 컴파일 결과 에러검사
     ret = output(
         sass_context_get_error_status(ctx_out),
         sass_context_get_error_message(ctx_out),
@@ -188,6 +198,7 @@ int compile_file(struct Sass_Options* options, char* input_path, char* outfile) 
         );
     }
 
+    // 만들었던 ctx 삭제
     sass_delete_file_context(ctx);
     return ret;
 }
@@ -246,7 +257,7 @@ void invalid_usage(char* argv0) {
 
 }
 
-// 실제 실행되는 부분
+// 실제 처음 실행되는 함수
 int main(int argc, char** argv) {
 #ifdef _MSC_VER
     _set_error_mode(_OUT_TO_STDERR);
@@ -399,15 +410,17 @@ int main(int argc, char** argv) {
         } else if (auto_source_map) {
             sass_option_set_source_map_embed(options, true);
         }
+        // 컴파일 진행
+        // printf("argv[optind]: %s\n", argv[optind]);
         result = compile_file(options, argv[optind], outfile);
     } else {
         if (optind < argc) {
             outfile = argv[optind];
         }
-        // 컴파일 실행
         result = compile_stdin(options, outfile);
     }
 
+    // option 제거
     sass_delete_options(options);
 
     #ifdef _WIN32
