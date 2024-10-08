@@ -331,7 +331,7 @@ extern "C" {
   {
     options->precision = 10;
     options->indent = "  ";
-    options->linefeed = LFEED;
+    options->linefeed = LFEED; // LFEED = '\n'
   }
 
   Sass_Options* ADDCALL sass_make_options (void)
