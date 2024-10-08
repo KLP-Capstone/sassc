@@ -171,15 +171,17 @@ int compile_file(struct Sass_Options* options, char* input_path, char* outfile) 
     // context의 내용이 input_path인 Sass_File_Context를 생성
     struct Sass_File_Context* ctx = sass_make_file_context(input_path);
     // sass_file_context_get_context: libsass_dir/include/sass/context.h 60번째 줄 정의, libsass_dir/src/sass_context.cpp 345번째 줄 구현
+    // Sass_File_Contest ctx를 넣어서 Sass_Context를 추출 (왜있는 코드인진 모르겠음)
     struct Sass_Context* ctx_out = sass_file_context_get_context(ctx);
-    if (outfile) sass_option_set_output_path(options, outfile);
+    if (outfile) sass_option_set_output_path(options, outfile); // option의 output_path를 outfile로 설정
     const char* srcmap_file = sass_option_get_source_map_file(options);
-    sass_option_set_input_path(options, input_path);
+    sass_option_set_input_path(options, input_path); // option의 input_path를 parameter input_path로 설정
     sass_file_context_set_options(ctx, options); // 생성한 sass_file_context에 option 설정
 
+    // 컴파일 진행
     sass_compile_file_context(ctx);
 
-    // 컴파일 진행
+    // 컴파일 결과 에러검사
     ret = output(
         sass_context_get_error_status(ctx_out),
         sass_context_get_error_message(ctx_out),
